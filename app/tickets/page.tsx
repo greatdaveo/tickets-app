@@ -1,14 +1,17 @@
 import React from "react";
 import prisma from "@/prisma/db";
+import DataTable from "./DataTable";
 
 const Tickets = async () => {
-  const ticketData = await prisma.tickets.findMany();
+  const ticketsData = await prisma.tickets.findMany();
 
-  console.log("Tickets Data:", ticketData);
+  console.log("Tickets Data:", ticketsData);
 
   return (
     <div>
-      <h1>Tickets</h1>
+      <h1>
+        <DataTable tickets={ticketsData} />
+      </h1>
     </div>
   );
 };
