@@ -2,13 +2,12 @@
 
 import React, { useState } from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
-import { ticketSchema } from "@/ValidationSchemas/tickets";
+import { userSchema } from "@/ValidationSchemas/users";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "./ui/input";
-import SimpleMDE from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
+
 import {
   Select,
   SelectContent,
@@ -19,32 +18,32 @@ import {
 import { Button } from "./ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Tickets } from "@prisma/client";
+import { User } from "@prisma/client";
 
-type TicketFormData = z.infer<typeof ticketSchema>;
+type UserFormData = z.infer<typeof userSchema>;
 
 interface Props {
-  ticket?: Tickets;
+  user?: User;
 }
 
-const TicketForm = ({ ticket }: Props) => {
+const UserForm = ({ user }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const form = useForm<TicketFormData>({
-    resolver: zodResolver(ticketSchema),
+  const form = useForm<UserFormData>({
+    resolver: zodResolver(userSchema),
   });
 
-  async function onSubmit(values: z.infer<typeof ticketSchema>) {
+  async function onSubmit(values: z.infer<typeof userSchema>) {
     try {
       setIsSubmitting(true);
       setError("");
 
-      if (ticket) {
-        await axios.patch("/api/tickets/" + ticket.id, values);
+      if (user) {
+        await axios.patch("/api/users/" + user.id, values);
       } else {
-        await axios.post("/api/tickets", values);
+        await axios.post("/api/users", values);
       }
 
       setIsSubmitting(false);
@@ -66,35 +65,60 @@ const TicketForm = ({ ticket }: Props) => {
         >
           <FormField
             control={form.control}
-            name="title"
-            defaultValue={ticket?.title}
+            name="name"
+            defaultValue={user?.name}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ticket Title</FormLabel>
+                <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ticket Title..." {...field} />
+                  <Input placeholder="Enter Users Full Name..." {...field} />
                 </FormControl>
               </FormItem>
             )}
           />
 
-          <Controller
-            name="description"
-            defaultValue={ticket?.description}
+          <FormField
             control={form.control}
+            name="username"
+            defaultValue={user?.username}
             render={({ field }) => (
-              <SimpleMDE placeholder="Description " {...field} />
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter a Username..." {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            defaultValue={user?.password}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    defaultValue=""
+                    required={user ? false : true}
+                    placeholder="Enter Password..."
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
             )}
           />
 
           <div className="flex w-full space-x-4">
             <FormField
               control={form.control}
-              name="status"
-              defaultValue={ticket?.status}
+              name="role"
+              defaultValue={user?.role}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Role</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -102,46 +126,16 @@ const TicketForm = ({ ticket }: Props) => {
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue
-                          placeholder="Status..."
-                          defaultValue={ticket?.status}
+                          placeholder="Role..."
+                          defaultValue={user?.role}
                         />
                       </SelectTrigger>
                     </FormControl>
 
                     <SelectContent>
-                      <SelectItem value="OPEN">Open</SelectItem>
-                      <SelectItem value="STARTED">Started</SelectItem>
-                      <SelectItem value="CLOSED">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="priority"
-              defaultValue={ticket?.priority}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder="Priority..."
-                          defaultValue={ticket?.priority}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-
-                    <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="USER">User</SelectItem>
+                      <SelectItem value="TECH">Tech</SelectItem>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -150,12 +144,14 @@ const TicketForm = ({ ticket }: Props) => {
           </div>
 
           <Button type="submit" disabled={isSubmitting}>
-            {ticket ? "Update Ticket" : "Create Ticket"}
+            {user ? "Update User" : "Create User"}
           </Button>
         </form>
       </Form>
+
+      <p className=" text-destructive">{error}</p>
     </div>
   );
 };
 
-export default TicketForm;
+export default UserForm;
